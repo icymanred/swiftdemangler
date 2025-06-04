@@ -1,6 +1,5 @@
 #[allow(unused)]
 use swiftdemangler::*;
-use std::rc::Rc;
 #[cfg(test)]
 mod tests {
     use std::rc::Rc;

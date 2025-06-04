@@ -26,7 +26,7 @@ impl Demangler {
         None
     }
     pub fn peek_char(&self) -> Option<char> {
-        return self.text.chars().last()
+         self.text.chars().nth(self.index as usize)
     }
     pub fn next_char(&mut self) -> Option<char> {
         if self.index as usize >= self.text.len() {
@@ -34,8 +34,27 @@ impl Demangler {
         }
         let curind:u32 = self.index;
         self.index+=1;
-        return self.text.chars().last();
+         self.text.chars().nth(curind as usize)
 
     }
-    
+    pub fn demangle_natural(&mut self) -> Option<i32> {
+        if !self.peek_char()?.is_ascii_digit() {
+            return None
+        }
+        let mut num:i32 = 0;
+        loop {
+            let curchar = self.peek_char();
+            if curchar.is_none_or(|a| !a.is_ascii_digit()) {
+                return Some(num);
+            }
+            let curchar = curchar.unwrap();
+            let newnum:i32 = (10 * num) + ((curchar as i32 ) - ('0' as i32));
+            num = newnum;
+            if newnum < num {
+                return None
+            }
+            self.next_char();
+
+        }
+    }
 }

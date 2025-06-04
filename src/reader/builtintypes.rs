@@ -1,8 +1,24 @@
-use crate::demangler::{self, Demangler};
+use crate::{demangler::Demangler, reader::builtintypes::strings::{BUILTIN_TYPE_NAME_BRIDGEOBJECT, BUILTIN_TYPE_NAME_EXECUTOR, BUILTIN_TYPE_NAME_UNSAFEVALUEBUFFER}};
+use std::rc::Rc;
+use crate::nodes::Node;
+
+macro_rules! textbuiltin {
+    ($x:expr) => {
+        Node { kind: (crate::nodes::NodeKind::BuiltinTypeName), payload: (crate::nodes::NodePayload::Text($x.to_string()))}
+    };
+}
+const MAX_TYPE_SIZE:i32 = 4096; 
 
 impl Demangler {
-    pub fn demangle_builtin(&mut self) {
-        
+    pub fn demangle_builtin(&mut self)  -> Option<Rc<Node>>{
+        let builtin = match self.next_char()? {
+                'b' => textbuiltin!(BUILTIN_TYPE_NAME_BRIDGEOBJECT),
+                'B' => textbuiltin!(BUILTIN_TYPE_NAME_UNSAFEVALUEBUFFER),
+                'e' => textbuiltin!(BUILTIN_TYPE_NAME_EXECUTOR),
+                
+                _=> return None
+        };
+        return Some(Rc::new(builtin));
     }
 
 }

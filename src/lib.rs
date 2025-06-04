@@ -1,4 +1,3 @@
-use std::ptr::read;
 type Res<T> = Result<T,&'static str>;
 pub mod reader;
 pub mod demangler;
