@@ -75,6 +75,51 @@ impl PartialEq for NodePayload {
     }
 }
 
+pub mod predicates {
+    use crate::nodes::*;
+    macro_rules! node_is_x {
+    ($x:ident,$($a:pat),*  ) => {
+        pub fn $x(n:&Node) -> bool {
+            match n.kind {
+                $(
+                    $a => true,
+                )*
+                NodeKind::Type => {
+                match &n.payload {
+                    NodePayload::Children(a) => { let firstchildopt = a.first(); match firstchildopt {
+                        None => false,
+                        Some(a) => predicates::$x(a)
+                    } }
+                    _=>false
+                }
+                }
+                _=>false
+
+            }
+
+
+        }
+
+    }
+    }
+    node_is_x!(is_class, NodeKind::Class, NodeKind::BoundGenericClass);
+    node_is_x!(is_alias, NodeKind::TypeAlias);
+    node_is_x!(is_enum, NodeKind::Enum, NodeKind::BoundGenericEnum);
+    node_is_x!(
+        is_protocol,
+        NodeKind::Protocol,
+        NodeKind::ProtocolSymbolicReference,
+        NodeKind::ObjectiveCProtocolSymbolicReference
+    );
+    node_is_x!(
+        is_struct,
+        NodeKind::Structure,
+        NodeKind::BoundGenericStructure
+    );
+
+}
+
+
 #[derive(PartialEq, Eq,Debug,Clone, Copy)]
 pub enum NodeKind {
     Allocator,
