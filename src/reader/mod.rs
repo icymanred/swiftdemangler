@@ -1,2 +1,2 @@
 pub mod prefixes;
-mod builtintypes;
+pub mod builtintypes;

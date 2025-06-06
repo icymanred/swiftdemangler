@@ -56,5 +56,24 @@ impl Demangler {
             self.next_char();
 
         }
+        
+    }
+    //for handling _ terminated naturals
+    pub fn demangle_index(&mut self) -> Option<i32> {
+        if self.next_if('_') {
+            return Some(0);
+        }
+        let  num:i32 = self.demangle_natural()?;
+        if num > 0 && self.next_if('_') {
+            return Some(num + 1);
+        }
+        None
+    }
+    pub fn next_if(&mut self, c:char) -> bool {
+        if self.peek_char().is_none_or(|a| a != c) {
+            return false;
+        }
+        self.index+=1;
+        true
     }
 }

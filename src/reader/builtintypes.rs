@@ -1,5 +1,5 @@
-use crate::{demangler::Demangler, reader::builtintypes::strings::{BUILTIN_TYPE_NAME_BRIDGEOBJECT, BUILTIN_TYPE_NAME_EXECUTOR, BUILTIN_TYPE_NAME_UNSAFEVALUEBUFFER}};
-use std::rc::Rc;
+use crate::{demangler::Demangler, reader::builtintypes::strings::{BUILTIN_TYPE_NAME_BRIDGEOBJECT, BUILTIN_TYPE_NAME_EXECUTOR, BUILTIN_TYPE_NAME_FLOAT, BUILTIN_TYPE_NAME_INT, BUILTIN_TYPE_NAME_UNSAFEVALUEBUFFER}};
+use std::{fmt::format, rc::Rc};
 use crate::nodes::Node;
 
 macro_rules! textbuiltin {
@@ -15,10 +15,27 @@ impl Demangler {
                 'b' => textbuiltin!(BUILTIN_TYPE_NAME_BRIDGEOBJECT),
                 'B' => textbuiltin!(BUILTIN_TYPE_NAME_UNSAFEVALUEBUFFER),
                 'e' => textbuiltin!(BUILTIN_TYPE_NAME_EXECUTOR),
+                'f' => {
+                    let sz:i32 = self.demangle_index()? -1;
+                    if !(0..MAX_TYPE_SIZE).contains(&sz) {
+                        return None;
+                    }
+                    let txt = format!("{}{}",BUILTIN_TYPE_NAME_FLOAT,sz);
+                    Node { kind: crate::nodes::NodeKind::BuiltinTypeName, payload: crate::nodes::NodePayload::Text(txt)}
+                },
+                'i' => {
+                    let sz:i32 = self.demangle_index()? -1;
+                    if !(0..MAX_TYPE_SIZE).contains(&sz) {
+                        return None;
+                    }
+                    let txt = format!("{}{}",BUILTIN_TYPE_NAME_INT,sz);
+                    Node { kind: crate::nodes::NodeKind::BuiltinTypeName, payload: crate::nodes::NodePayload::Text(txt)}
                 
+                }
+
                 _=> return None
         };
-        return Some(Rc::new(builtin));
+         Some(Rc::new(builtin))
     }
 
 }
@@ -26,7 +43,7 @@ impl Demangler {
 
 #[allow(unused)]
 /// All the string names of builtin swift types
-mod strings {
+pub mod strings {
     pub const BUILTIN_TYPE_NAME_INT:&str = "Builtin.Int";
 /// The name of the Builtin type for Int8
 pub const BUILTIN_TYPE_NAME_INT8:&str = "Builtin.Int8";
