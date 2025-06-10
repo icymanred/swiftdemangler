@@ -1,5 +1,5 @@
-use crate::{demangler::Demangler, reader::builtintypes::strings::{BUILTIN_TYPE_NAME_BRIDGEOBJECT, BUILTIN_TYPE_NAME_EXECUTOR, BUILTIN_TYPE_NAME_FLOAT, BUILTIN_TYPE_NAME_INT, BUILTIN_TYPE_NAME_UNSAFEVALUEBUFFER}};
-use std::{fmt::format, rc::Rc};
+use crate::{demangler::Demangler, nodes::NodeKind, reader::builtintypes::strings::*};
+use std::rc::Rc;
 use crate::nodes::Node;
 
 macro_rules! textbuiltin {
@@ -31,11 +31,33 @@ impl Demangler {
                     let txt = format!("{}{}",BUILTIN_TYPE_NAME_INT,sz);
                     Node { kind: crate::nodes::NodeKind::BuiltinTypeName, payload: crate::nodes::NodePayload::Text(txt)}
                 
+                },
+                'I' => textbuiltin!(BUILTIN_TYPE_NAME_INTLITERAL),
+                'v' => {
+                    let sz:i32 = self.demangle_index()? -1;
+                    if !(0..MAX_TYPE_SIZE).contains(&sz) {
+                        return None;
+                    }
+                    let ty = self.pop_type_child()?;
+                    let tytex = match &ty.payload {
+                        crate::nodes::NodePayload::Text(a) => a,
+                        _=> return None
+                    };
+                    if ty.kind != NodeKind::BuiltinTypeName || !tytex.starts_with(BUILTIN_TYPE_NAME_PREFIX) {
+                        return None;
+                    }
+                    let nam = format!("{}{}x{}",BUILTIN_TYPE_NAME_VEC,sz,tytex.strip_prefix(BUILTIN_TYPE_NAME_PREFIX)?);
+                    Node { kind: NodeKind::BuiltinTypeName, payload: crate::nodes::NodePayload::Text(nam)}
+                    
+                    
+                     
+                
+
                 }
 
                 _=> return None
         };
-         Some(Rc::new(builtin))
+         Some(Node::create_type(builtin))
     }
 
 }

@@ -19,13 +19,31 @@ impl Node {
     pub fn is_index(self) -> bool {
         matches!(self.payload,NodePayload::Index(_))
     }
+    pub fn child_count(&self) -> u32 {
+        match &self.payload {
+            NodePayload::Children(a) => a.len() as u32,
+            _ => 0
+        }
+    }
+    pub fn first_child(&self) -> Option<Rc<Node>> {
+        match &self.payload {
+            NodePayload::Children(a) => a.first().cloned(),
+            _=>None
+        }
+    }
+    
     ///
     /// Simple equality check, however in the case of the payload being a vector of nodes, it only considers the length of the vector, not the inner contents, use == for slower but more accurate equality checks
     /// 
     pub fn is_similar(&self,other: &Node) -> bool {
         self.kind == other.kind && self.payload == other.payload
-
+        
     }
+    #[inline]
+    pub fn create_type(node:Node) -> Rc<Node> {
+         Rc::new(Node { kind: NodeKind::Type, payload:  NodePayload::Children(vec![Rc::new(node)])})
+    }
+
     
 }
 impl PartialEq for Node {

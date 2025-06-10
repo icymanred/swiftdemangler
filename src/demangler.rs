@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{rc::Rc, vec};
 
 use crate::nodes::*;
 #[derive(Default)]
@@ -18,6 +18,9 @@ impl Demangler {
         }
         None
     }
+    /// Only pops if the node meets a certain condition supplied by "pred" via a function that takes in a node and returns a bool.
+    /// <br>
+    /// This returns an option to a reference counted node with None being if there are no nodes to pop or the node doesn't meet pred
     pub fn pop_pred<T: Fn(&Node) -> bool>(&mut self, pred: T) -> Option<Rc<Node>> {
         let last = self.node_stack.last()?;
         if pred(last) {
@@ -75,5 +78,14 @@ impl Demangler {
         }
         self.index+=1;
         true
+    }
+    
+    pub fn pop_type_child(&mut self) -> Option<Rc<Node>> {
+        let ty = self.pop_pred(|a: &Node| a.kind == NodeKind::Type && a.child_count() == 1)?;
+        match &ty.payload {
+            NodePayload::Children(ab) => ab.first().cloned(),
+            _=> unreachable!()
+        }
+
     }
 }
